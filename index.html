@@ -548,10 +548,14 @@
 
   <section class="panel" id="nexonPanel">
     <h2>넥슨 캐릭터 정보 불러오기</h2>
-    <p class="sub">닉네임으로 레벨·직업·월드·길드 정보를 가져와 캐릭터 카드에 표시합니다. (메소 등 재화 보유량은 넥슨 API에서 제공하지 않아 자동으로 채워지지 않습니다)</p>
+    <p class="sub">닉네임으로 레벨·직업·월드·길드 정보를 가져옵니다. 넥슨 API는 "내 계정의 캐릭터 목록"을 자동으로 보여주진 않아서, 닉네임은 직접 입력해야 해요. 재화 보유량도 넥슨 API에서 제공하지 않습니다.</p>
     <div class="nexon-row">
       <input type="text" id="nexonProxyUrlInput" placeholder="프록시 서버 주소 (예: https://xxx.workers.dev)">
       <button class="btn-ghost" onclick="saveNexonProxyUrl()">저장</button>
+    </div>
+    <div class="nexon-row">
+      <input type="password" id="nexonApiKeyInput" placeholder="내 넥슨 오픈 API 키 (이 브라우저에만 저장, 다른 사람에게 공유 안 됨)">
+      <button class="btn-ghost" onclick="saveNexonApiKey()">저장</button>
     </div>
     <div class="nexon-row">
       <input type="text" id="nexonCharName" placeholder="캐릭터 닉네임">
@@ -1634,9 +1638,20 @@ function importData(file) {
   document.getElementById('importFileInput').value = '';
 }
 
+const NEXON_KEY_LOCAL_STORAGE = 'nexon-personal-api-key'; // 백업/내보내기 대상(state)에 포함되지 않는 개인 전용 저장소
+
 function initNexonProxyInput() {
   const input = document.getElementById('nexonProxyUrlInput');
   if (input) input.value = state.nexonProxyUrl || '';
+
+  const keyInput = document.getElementById('nexonApiKeyInput');
+  if (keyInput) {
+    try {
+      keyInput.value = window.localStorage.getItem(NEXON_KEY_LOCAL_STORAGE) || '';
+    } catch (e) {
+      // localStorage 사용 불가 환경 - 무시
+    }
+  }
 }
 
 function saveNexonProxyUrl() {
@@ -1644,7 +1659,26 @@ function saveNexonProxyUrl() {
   state.nexonProxyUrl = input.value.trim().replace(/\/$/, '');
   persist();
   const statusEl = document.getElementById('nexonFetchStatus');
-  if (statusEl) statusEl.textContent = '프록시 주소가 저장되었어요.';
+  if (statusEl) statusEl.textContent = '프록시 주소가 저장되었어요. (이 주소는 백업 파일에도 포함됩니다)';
+}
+
+function saveNexonApiKey() {
+  const input = document.getElementById('nexonApiKeyInput');
+  const statusEl = document.getElementById('nexonFetchStatus');
+  try {
+    window.localStorage.setItem(NEXON_KEY_LOCAL_STORAGE, input.value.trim());
+    if (statusEl) statusEl.textContent = '내 API 키가 이 브라우저에 저장되었어요. (백업/내보내기 파일에는 포함되지 않습니다)';
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '이 브라우저에서는 키를 저장할 수 없어요.';
+  }
+}
+
+function getNexonApiKey() {
+  try {
+    return window.localStorage.getItem(NEXON_KEY_LOCAL_STORAGE) || '';
+  } catch (e) {
+    return '';
+  }
 }
 
 async function fetchNexonCharacterInfo() {
@@ -1652,9 +1686,14 @@ async function fetchNexonCharacterInfo() {
   const nameInput = document.getElementById('nexonCharName');
   const statusEl = document.getElementById('nexonFetchStatus');
   const name = nameInput.value.trim();
+  const myApiKey = getNexonApiKey();
 
   if (!proxyUrl) {
     statusEl.textContent = '먼저 위에 프록시 서버 주소를 입력하고 저장하세요.';
+    return;
+  }
+  if (!myApiKey) {
+    statusEl.textContent = '먼저 본인의 넥슨 오픈 API 키를 입력하고 저장하세요.';
     return;
   }
   if (!name) {
@@ -1665,7 +1704,9 @@ async function fetchNexonCharacterInfo() {
   statusEl.textContent = '불러오는 중...';
 
   try {
-    const res = await fetch(`${proxyUrl}?character_name=${encodeURIComponent(name)}`);
+    const res = await fetch(`${proxyUrl}?character_name=${encodeURIComponent(name)}`, {
+      headers: { 'x-user-nexon-key': myApiKey }
+    });
     const data = await res.json();
 
     if (!res.ok || data.error) {
