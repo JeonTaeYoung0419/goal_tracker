@@ -451,6 +451,23 @@
   .settle-row.total span:last-child { color: var(--gold); font-weight: 600; }
   .settle-row.total span:first-child { color: var(--text-dim); font-weight: 500; }
 
+  .nexon-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .nexon-row:last-of-type { margin-bottom: 0; }
+  .nexon-row input { flex: 1; }
+  .nexon-row button { flex-shrink: 0; padding: 7px 14px; }
+  .nexon-status { font-size: 12px; color: var(--text-faint); margin-top: 10px; min-height: 16px; }
+
+  .nexon-info-line {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    background: rgba(224, 166, 61, 0.08);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 9px;
+    margin-bottom: 12px;
+  }
+  .nexon-sync-date { color: var(--text-faint); margin-left: 4px; }
+
   .add-char-btn {
     display: flex;
     align-items: center;
@@ -529,6 +546,20 @@
     </section>
   </div>
 
+  <section class="panel" id="nexonPanel">
+    <h2>넥슨 캐릭터 정보 불러오기</h2>
+    <p class="sub">닉네임으로 레벨·직업·월드·길드 정보를 가져와 캐릭터 카드에 표시합니다. (메소 등 재화 보유량은 넥슨 API에서 제공하지 않아 자동으로 채워지지 않습니다)</p>
+    <div class="nexon-row">
+      <input type="text" id="nexonProxyUrlInput" placeholder="프록시 서버 주소 (예: https://xxx.workers.dev)">
+      <button class="btn-ghost" onclick="saveNexonProxyUrl()">저장</button>
+    </div>
+    <div class="nexon-row">
+      <input type="text" id="nexonCharName" placeholder="캐릭터 닉네임">
+      <button class="btn-primary" onclick="fetchNexonCharacterInfo()">불러오기</button>
+    </div>
+    <div id="nexonFetchStatus" class="nexon-status"></div>
+  </section>
+
   <section class="panel" id="bossPanel">
     <div class="section-title-row">
       <h2>보스 수익</h2>
@@ -595,6 +626,7 @@ async function loadState() {
       storageMode = 'cloud';
       await persist();
       renderAll();
+      initNexonProxyInput();
       return;
     } catch (e) {
       // window.storage 사용 실패 시 localStorage로 폴백
@@ -619,6 +651,7 @@ async function loadState() {
     saveEl.textContent = '이 환경에서는 저장이 지원되지 않아요 (새로고침 시 초기화됨)';
   }
   renderAll();
+  initNexonProxyInput();
 }
 
 function seedDefaults() {
@@ -632,6 +665,7 @@ function seedDefaults() {
   state.resourceStock = { [meso.id]: 12000000000, [erda.id]: 20 };
   state.dailyHunting = { [meso.id]: 500000000, [erda.id]: 3 };
   state.lastAppliedDate = todayStr();
+  state.nexonProxyUrl = '';
   state.goals = [
     {
       id: uid(),
@@ -654,6 +688,7 @@ function normalizeState() {
   if (!state.goals) state.goals = [];
   if (!state.resourceStock) state.resourceStock = {};
   if (!state.dailyHunting) state.dailyHunting = {};
+  if (typeof state.nexonProxyUrl !== 'string') state.nexonProxyUrl = '';
 
   state.goals.forEach(g => {
     if (!g.subGoals) g.subGoals = [];
@@ -1147,6 +1182,12 @@ function renderBossCharacters() {
           <input type="text" value="${escapeHtml(c.name)}" onchange="renameCharacter('${c.id}', this.value)">
           <button class="btn-icon" onclick="deleteCharacter('${c.id}')" title="캐릭터 삭제">✕</button>
         </div>
+        ${c.nexonInfo ? `
+          <div class="nexon-info-line">
+            Lv.${c.nexonInfo.level || '?'} ${escapeHtml(c.nexonInfo.jobClass || '')} · ${escapeHtml(c.nexonInfo.worldName || '')}${c.nexonInfo.guildName ? ' · ' + escapeHtml(c.nexonInfo.guildName) : ''}
+            <span class="nexon-sync-date">(동기화: ${c.nexonInfo.lastSynced})</span>
+          </div>
+        ` : ''}
         ${prodRows}
         ${relevantResources.length > 0 ? `
           <div class="settle-btn-row">
@@ -1591,6 +1632,78 @@ function importData(file) {
   };
   reader.readAsText(file);
   document.getElementById('importFileInput').value = '';
+}
+
+function initNexonProxyInput() {
+  const input = document.getElementById('nexonProxyUrlInput');
+  if (input) input.value = state.nexonProxyUrl || '';
+}
+
+function saveNexonProxyUrl() {
+  const input = document.getElementById('nexonProxyUrlInput');
+  state.nexonProxyUrl = input.value.trim().replace(/\/$/, '');
+  persist();
+  const statusEl = document.getElementById('nexonFetchStatus');
+  if (statusEl) statusEl.textContent = '프록시 주소가 저장되었어요.';
+}
+
+async function fetchNexonCharacterInfo() {
+  const proxyUrl = (state.nexonProxyUrl || '').trim();
+  const nameInput = document.getElementById('nexonCharName');
+  const statusEl = document.getElementById('nexonFetchStatus');
+  const name = nameInput.value.trim();
+
+  if (!proxyUrl) {
+    statusEl.textContent = '먼저 위에 프록시 서버 주소를 입력하고 저장하세요.';
+    return;
+  }
+  if (!name) {
+    statusEl.textContent = '캐릭터 닉네임을 입력하세요.';
+    return;
+  }
+
+  statusEl.textContent = '불러오는 중...';
+
+  try {
+    const res = await fetch(`${proxyUrl}?character_name=${encodeURIComponent(name)}`);
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      statusEl.textContent = '오류: ' + (data.error || '캐릭터를 찾을 수 없습니다.');
+      return;
+    }
+
+    let c = state.characters.find(ch => ch.name === data.character_name);
+    if (!c) {
+      const weekly = {};
+      const monthly = {};
+      state.resources.forEach(r => { weekly[r.id] = 0; monthly[r.id] = 0; });
+      c = {
+        id: uid(),
+        name: data.character_name,
+        weekly,
+        monthly,
+        lastSettled: {},
+        settlementLog: { weekly: [], monthly: [] }
+      };
+      state.characters.push(c);
+    }
+
+    c.nexonInfo = {
+      level: data.character_level,
+      jobClass: data.character_class,
+      worldName: data.world_name,
+      guildName: data.character_guild_name,
+      lastSynced: todayStr()
+    };
+
+    persist();
+    renderBossCharacters();
+    nameInput.value = '';
+    statusEl.textContent = `"${data.character_name}" 정보를 불러왔어요 (Lv.${data.character_level} ${data.character_class})`;
+  } catch (e) {
+    statusEl.textContent = '요청 중 오류가 발생했어요. 프록시 주소가 정확한지, Worker가 정상 배포됐는지 확인해주세요.';
+  }
 }
 
 loadState();
