@@ -1,26 +1,64 @@
 /* 수급 & 목표 트래커 - 섹션 메뉴 */
-function showSection(sectionName) {
-  const sections = document.querySelectorAll('.page-section');
-  const buttons = document.querySelectorAll('.main-nav button[data-section]');
-  const target = document.getElementById(`page-${sectionName}`);
-  if (!target) return;
+(function () {
+  function showSection(sectionName) {
+    const target = document.getElementById('page-' + sectionName);
+    if (!target) return;
 
-  sections.forEach(section => {
-    section.classList.toggle('active', section === target);
-  });
-  buttons.forEach(button => {
-    button.classList.toggle('active', button.dataset.section === sectionName);
-  });
+    document.querySelectorAll('.page-section').forEach(function (section) {
+      section.classList.toggle('active', section === target);
+    });
 
-  // 메뉴를 바꿀 때도 현재 탭의 데이터가 최신 상태로 보이도록 갱신합니다.
-  if (sectionName === 'boss' && typeof renderBossCharacters === 'function') {
-    renderBossCharacters();
-    renderBossExtra();
+    document
+      .querySelectorAll('.main-nav button[data-section]')
+      .forEach(function (button) {
+        button.classList.toggle(
+          'active',
+          button.getAttribute('data-section') === sectionName
+        );
+      });
+
+    // 탭을 열 때 해당 화면을 최신 상태로 다시 그립니다.
+    if (
+      sectionName === 'boss' &&
+      typeof window.renderBossCharacters === 'function'
+    ) {
+      window.renderBossCharacters();
+
+      if (typeof window.renderBossExtra === 'function') {
+        window.renderBossExtra();
+      }
+    } else if (
+      sectionName === 'daily' &&
+      typeof window.renderDailyHunting === 'function'
+    ) {
+      window.renderDailyHunting();
+    } else if (
+      sectionName === 'settle' &&
+      typeof window.renderSettlement === 'function'
+    ) {
+      window.renderSettlement();
+    }
   }
-  if (sectionName === 'daily' && typeof renderDailyHunting === 'function') {
-    renderDailyHunting();
+
+  // 외부 JavaScript에서 사용할 수 있도록 전역 함수로 등록합니다.
+  window.showSection = showSection;
+
+  function initNavigation() {
+    document
+      .querySelectorAll('.main-nav button[data-section]')
+      .forEach(function (button) {
+        button.addEventListener('click', function () {
+          showSection(button.getAttribute('data-section'));
+        });
+      });
+
+    // 처음에는 목표 탭만 표시합니다.
+    showSection('goals');
   }
-  if (sectionName === 'settle' && typeof renderSettlement === 'function') {
-    renderSettlement();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavigation);
+  } else {
+    initNavigation();
   }
-}
+})();
