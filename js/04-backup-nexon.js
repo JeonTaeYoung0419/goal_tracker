@@ -138,6 +138,7 @@ async function fetchNexonCharacterInfo() {
       jobClass: data.character_class,
       worldName: data.world_name,
       guildName: data.character_guild_name,
+      image: data.character_image,
       lastSynced: todayStr()
     };
 
