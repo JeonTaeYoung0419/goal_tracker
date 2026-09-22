@@ -304,44 +304,36 @@
     background: var(--panel-2);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 12px 14px;
+    padding: 10px 14px 14px;
     }
-  .char-card-head {
+  .char-thump-wrap {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .char-nexon-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 4px;
-    margin-bottom: 8px;
+    justify-content: center;
+    margin: -2px 0 8px;
   }
   .char-thumb {
-    width: 56px;
-    height: 56px;
+    width: auto;
+    height: 140px;
+    max-width: 100%;
     object-fit: contain;
     object-position: top center;
-    background: #111826;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    flex-shrink: 0;
   }
-  .char-nexon-text {
-    font-size: 11px;
-    color: var(--text-faint);
-    line-height: 1.4;
+  .char-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
   }
   .char-card-head input {
-    font-family: 'Space Grotesk', sans-serif;
+    flex: 1;
+    min-width: 0;
+  }
+  .char-level-badge {
+    flex-shrink: 0;
+    font-size: 12px;
     font-weight: 600;
-    font-size: 14.5px;
-    background: transparent;
-    border: none;
-    padding: 2px 0;
+    color: var(--gold);
+    white-space: nowrap;
   }
   .char-card-head input:focus { border-bottom: 1px solid var(--gold); border-radius: 0; }
   .prod-block {
