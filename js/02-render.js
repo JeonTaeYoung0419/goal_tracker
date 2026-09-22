@@ -269,11 +269,15 @@ function renderBossCharacters() {
           <button class="btn-icon" onclick="deleteCharacter('${c.id}')" title="캐릭터 삭제">✕</button>
         </div>
         ${c.nexonInfo ? `
-          <div class="nexon-info-line">
-            Lv.${c.nexonInfo.level || '?'} ${escapeHtml(c.nexonInfo.jobClass || '')} · ${escapeHtml(c.nexonInfo.worldName || '')}${c.nexonInfo.guildName ? ' · ' + escapeHtml(c.nexonInfo.guildName) : ''}
-            <span class="nexon-sync-date">(동기화: ${c.nexonInfo.lastSynced})</span>
+          <div class="char-nexon-info">
+            ${c.nexonInfo.image ? `<img src="${c.nexonInfo.image}" alt="${escapeHtml(c.name)}" class="char-thumb" onerror="this.style.display='none'">` : ''}
+            <div class="char-nexon-text">
+              Lv.${c.nexonInfo.level || '?'} ${escapeHtml(c.nexonInfo.jobClass || '')} · ${escapeHtml(c.nexonInfo.worldName || '')}${c.nexonInfo.guildName ? ' · ' + escapeHtml(c.nexonInfo.guildName) : ''}
+              <span class="char-nexon-synced">(동기화: ${c.nexonInfo.lastSynced})</span>
+            </div>
           </div>
         ` : ''}
+
         ${prodRows}
         ${relevantResources.length > 0 ? `
           <div class="settle-btn-row">
