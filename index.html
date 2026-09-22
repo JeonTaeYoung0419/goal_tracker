@@ -304,33 +304,36 @@
     background: var(--panel-2);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px 18px;
-  }
+    padding: 12px 14px;
+    }
   .char-card-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   .char-nexon-info {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    text-align: center;
+    gap: 4px;
+    margin-bottom: 8px;
   }
   .char-thumb {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     object-fit: contain;
+    object-position: top center;
     background: #111826;
     border: 1px solid var(--border);
     border-radius: 8px;
     flex-shrink: 0;
   }
   .char-nexon-text {
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--text-faint);
-    line-height: 1.5;
+    line-height: 1.4;
   }
   .char-card-head input {
     font-family: 'Space Grotesk', sans-serif;
