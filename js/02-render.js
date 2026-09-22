@@ -264,19 +264,19 @@ function renderBossCharacters() {
 
     return `
       <div class="char-card">
-        <div class="char-card-head">
-          <input type="text" value="${escapeHtml(c.name)}" onchange="renameCharacter('${c.id}', this.value)">
-          <button class="btn-icon" onclick="deleteCharacter('${c.id}')" title="캐릭터 삭제">✕</button>
-        </div>
-        ${c.nexonInfo ? `
-          <div class="char-nexon-info">
-            ${c.nexonInfo.image ? `<img src="${c.nexonInfo.image}" alt="${escapeHtml(c.name)}" class="char-thumb" onerror="this.style.display='none'">` : ''}
-            <div class="char-nexon-text">
-              Lv.${c.nexonInfo.level || '?'} ${escapeHtml(c.nexonInfo.jobClass || '')} · ${escapeHtml(c.nexonInfo.worldName || '')}${c.nexonInfo.guildName ? ' · ' + escapeHtml(c.nexonInfo.guildName) : ''}
-              <span class="char-nexon-synced">(동기화: ${c.nexonInfo.lastSynced})</span>
-            </div>
+        ${c.nexonInfo && c.nexonInfo.image ? `
+          <div class="char-thumb-wrap">
+            <img src="${c.nexonInfo.image}" alt="${escapeHtml(c.name)}" class="char-thumb" onerror="this.parentElement.style.display='none'">
           </div>
         ` : ''}
+        <div class="char-card-head">
+          <input type="text" value="${escapeHtml(c.name)}" onchange="renameCharacter('${c.id}', this.value)">
+          ${c.nexonInfo ? `<span class="char-level-badge">Lv.${c.nexonInfo.level || '?'}</span>` : ''}
+          <button class="btn-icon" onclick="deleteCharacter('${c.id}')" title="캐릭터 삭제">✕</button>
+        </div>
+
+    ${prodRows}
+
 
         ${prodRows}
         ${relevantResources.length > 0 ? `
