@@ -307,13 +307,13 @@
     padding: 10px 14px 14px;
   }
   .char-thumb-wrap {
-    position: relative;      /* ← 추가 */
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    position: relative;
     width: 100%;
     height: 140px;
-    margin: 0 0 8px;          /* ← 음수 마진(-2px) 제거 */
+    margin: 0 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #111826;
     overflow: hidden;
   }
   .char-thumb {
@@ -323,7 +323,7 @@
     width: 100%;
     height: 100%;             /* ← auto가 아니라 박스에 꽉 채움 */
     object-fit: cover;
-    object-position: 50% 40%;
+    object-position: bottom center;
   }
   .char-card-head {
     display: flex;
