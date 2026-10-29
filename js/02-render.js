@@ -292,7 +292,7 @@ function renderBossCharacters() {
     `;
   }).join('');
 
-  grid.innerHTML = cards + `<button class="add-char-btn" onclick="addCharacter()">+ 캐릭터 추가</button>`;
+    grid.innerHTML = cards + `<button class="add-char-btn" onclick="openCharAddModal()">+ 캐릭터 추가</button>`;
 }
 
 function renderBossExtra() {
