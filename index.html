@@ -558,6 +558,99 @@
     .main-nav { gap: 5px; }
     .main-nav button { flex: 1 1 calc(50% - 5px); padding: 9px 8px; }
   }
+  /* ---- 캐릭터 추가 모달 (닉네임 검색 -> 미리보기 -> 추가) ---- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 13, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .modal-head h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    margin: 0;
+  }
+  .modal-close {
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 16px;
+    padding: 4px;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-search-row { display: flex; gap: 8px; }
+  .modal-search-row input { border: 2px solid var(--gold); }
+  .modal-search-row button { flex-shrink: 0; padding: 0 16px; }
+  .modal-status {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 10px;
+    min-height: 16px;
+  }
+  .modal-status.error { color: var(--danger); }
+
+  .char-preview-card {
+    margin-top: 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .char-preview-top { display: flex; align-items: center; gap: 14px; }
+  .char-preview-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    background: #111826;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .char-preview-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  .char-preview-stat {
+    display: flex;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+  .char-preview-stat b { color: var(--text); font-weight: 600; }
+  .char-preview-add-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px 0;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .modal-manual-link { text-align: center; margin-top: 18px; }
+  .link-btn {
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 12.5px;
+    padding: 4px;
+  }
+  .link-btn:hover { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -639,6 +732,24 @@
 
 
 </div>
-<script src="js/01-state.js"></script><script src="js/02-render.js"></script><script src="js/03-goal-actions.js"></script><script src="js/04-backup-nexon.js"></script><script src="js/06-navigation.js"></script><script src="js/05-main.js"></script>
+<!-- 캐릭터 추가 모달: 닉네임 검색 -> 미리보기(이미지/레벨/직업/월드) -> 추가 -->
+<div id="charAddModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>캐릭터 추가</h3>
+      <button class="modal-close" onclick="closeCharAddModal()" type="button">✕</button>
+    </div>
+    <div class="modal-search-row">
+      <input id="charAddNickInput" placeholder="닉네임 입력" type="text"/>
+      <button class="btn-primary" onclick="searchNexonCharacterForAdd()" type="button">검색</button>
+    </div>
+    <div id="charAddPreview"></div>
+    <div id="charAddStatus" class="modal-status"></div>
+    <div class="modal-manual-link">
+      <button class="link-btn" onclick="manualAddCharacterFromModal()" type="button">수동 추가 →</button>
+    </div>
+  </div>
+</div>  
+<script src="js/01-state.js"></script><script src="js/02-render.js"></script><script src="js/03-goal-actions.js"></script><script src="js/04-backup-nexon.js"></script><script src="js/06-navigation.js"></script><script src="js/07-character-modal.js"></script><script src="js/05-main.js"></script>
 </body>
 </html>
